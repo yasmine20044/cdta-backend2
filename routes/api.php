@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\NavItemController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\EventController;
@@ -22,12 +23,14 @@ Route::middleware([SecureHeaders::class])->group(function () {
     //
     Route::prefix('v1')->group(function () {
 
+        Route::get('/nav', [NavItemController::class, 'index']);
+
         //
         // AUTH (PUBLIC)
         //
         Route::middleware(['throttle:5,1'])->group(function () {
-            Route::post('/register', [AuthController::class, 'register']);
             Route::post('/login', [AuthController::class, 'login']);
+            Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
             Route::post('/logout', [AuthController::class, 'logout'])
                 ->middleware('auth:sanctum');
         });
@@ -85,6 +88,7 @@ Route::middleware([SecureHeaders::class])->group(function () {
         //
         Route::middleware(['auth:sanctum', 'role:admin', 'throttle:5,1'])
             ->group(function () {
+                Route::post('/users', [AuthController::class, 'createUser']);
                 Route::get('/manage-users', function () {
                     return response()->json([
                         'message' => 'Admin can manage users'

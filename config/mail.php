@@ -37,6 +37,10 @@ return [
 
     'mailers' => [
 
+        'gmail-oauth' => [
+            'transport' => 'gmail-oauth',
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
