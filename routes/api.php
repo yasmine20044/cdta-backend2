@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\MessageController;
 use App\Http\Middleware\SecureHeaders;
 
 Route::middleware([SecureHeaders::class])->group(function () {
@@ -31,6 +32,7 @@ Route::middleware([SecureHeaders::class])->group(function () {
         //
         Route::middleware(['throttle:5,1'])->group(function () {
             Route::post('/login', [AuthController::class, 'login']);
+            Route::post('/contact', [MessageController::class, 'store']);
             Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
             Route::post('/logout', [AuthController::class, 'logout'])
                 ->middleware('auth:sanctum');
@@ -100,6 +102,11 @@ Route::middleware([SecureHeaders::class])->group(function () {
                         'message' => 'Admin can manage users'
                     ]);
                 });
+                
+                // MESSAGES
+                Route::get('/messages', [MessageController::class, 'index']);
+                Route::put('/messages/{id}/read', [MessageController::class, 'markAsRead']);
+                Route::delete('/messages/{id}', [MessageController::class, 'destroy']);
             });
 
         //

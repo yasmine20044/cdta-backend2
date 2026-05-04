@@ -63,13 +63,12 @@ class EventController extends Controller
         return response()->json($event, 201);
     }
 
-    // Afficher un event
     public function show($id)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::where('id', $id)->orWhere('slug', $id)->firstOrFail();
 
         Log::info('Event consulté', [
-            'id' => $event->id,
+            'identifier' => $id,
             'title' => $event->title,
             'user_id' => auth()->id() ?? null,
         ]);

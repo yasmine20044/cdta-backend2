@@ -21,10 +21,10 @@ class NewsController extends Controller
 
     public function show($id)
     {
-        $news = News::find($id);
+        $news = News::where('id', $id)->orWhere('slug', $id)->first();
         if (!$news) return response()->json(['message' => 'News not found'], 404);
 
-        Log::info('News consultée', ['id' => $id, 'user_id' => auth()->id() ?? null]);
+        Log::info('News consultée', ['identifier' => $id, 'user_id' => auth()->id() ?? null]);
        
         return new NewsResource($news);
     }

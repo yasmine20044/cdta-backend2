@@ -13,13 +13,7 @@ class NewsResource extends JsonResource
      * @return array<string, mixed>
      */
     public function toArray($request)
-{
-    return [
-        'id' => $this->id,
-        'title' => $this->title,
-        'content' => $this->content,
-        'image' => $this->image,
-        'created_at' => $this->created_at
-    ];
-}
+    {
+        return parent::toArray($request);
+    }
 }

@@ -11,7 +11,7 @@ class NavItemSeeder extends Seeder
     public function run(): void
     {
         // Top-level items
-        $accueil = NavItem::create(['label' => 'Accueil', 'url' => '/fr/', 'order' => 1]);
+        $accueil = NavItem::create(['label' => 'Accueil', 'url' => '/', 'order' => 1]);
         
         $cdta = NavItem::create([
             'label' => 'CDTA', 
