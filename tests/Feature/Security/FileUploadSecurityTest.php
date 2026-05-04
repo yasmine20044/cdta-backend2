@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * Verifies that file upload endpoints correctly:
  * - Reject non-image files (PHP scripts, executables, etc.)
- * - Reject files exceeding the 2MB size limit
+ * - Reject files exceeding the 10MB size limit
  * - Accept only allowed MIME types (jpg, jpeg, png)
  * - Handle double-extension attacks safely
  *
@@ -93,14 +93,14 @@ class FileUploadSecurityTest extends TestCase
     }
 
     /**
-     * Test that uploading a file exceeding 2MB is rejected.
+     * Test that uploading a file exceeding 10MB is rejected.
      */
     public function test_uploading_oversized_file_is_rejected(): void
     {
         $token = $this->getAdminToken();
 
-        // Create a 3MB image (exceeds 2048KB limit)
-        $file = UploadedFile::fake()->image('large.jpg')->size(3000);
+        // Create an 11MB image (exceeds 10240KB limit)
+        $file = UploadedFile::fake()->image('large.jpg')->size(11000);
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,

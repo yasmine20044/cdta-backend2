@@ -209,11 +209,11 @@ php artisan test --filter test_xss_script_tag_in_event_title_is_stripped
 |------|-----------------|
 | `test_uploading_php_file_is_rejected` | `.php` file upload → 422 rejected |
 | `test_uploading_executable_file_is_rejected` | `.exe` file upload → 422 rejected |
-| `test_uploading_oversized_file_is_rejected` | 3MB file (limit is 2MB) → 422 rejected |
+| `test_uploading_oversized_file_is_rejected` | 11MB file (limit is 10MB) → 422 rejected |
 | `test_uploading_valid_jpeg_image_is_accepted` | Valid `.jpg` → 201 accepted ✅ |
 | `test_double_extension_file_gets_uuid_filename` | `shell.php.jpg` → stored as UUID, not original name |
 
-**Components tested:** Laravel validation rules (`image|mimes:jpg,jpeg,png|max:2048`), UUID filename storage
+**Components tested:** Laravel validation rules (`image|mimes:jpg,jpeg,png|max:10240`), UUID filename storage
 
 ---
 
