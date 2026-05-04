@@ -20,7 +20,12 @@ class News extends Model
         'excerpt',
         'author',
         'published_at',
-        'category'
+        'category',
+        'additional_images'
+    ];
+
+    protected $casts = [
+        'additional_images' => 'array',
     ];
 
     // Mutator pour content

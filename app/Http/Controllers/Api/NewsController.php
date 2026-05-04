@@ -38,7 +38,8 @@ class NewsController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'author' => 'nullable|string|max:255',
             'category' => 'nullable|string|max:100',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10240',
+            'gallery_images.*' => 'nullable|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         foreach (['content','excerpt','author','category'] as $field) {
@@ -56,6 +57,22 @@ class NewsController extends Controller
             $path = $request->file('image')->storeAs('news', $filename, 'public');
             $validated['image'] = $path;
         }
+
+        $galleryPaths = [];
+        if ($request->hasFile('gallery_images')) {
+            $files = $request->file('gallery_images');
+            if (is_array($files)) {
+                $files = array_slice($files, 0, 4); // Max 4 extra images (total 5)
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $filename = \Str::uuid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('news/gallery', $filename, 'public');
+                        $galleryPaths[] = $path;
+                    }
+                }
+            }
+        }
+        $validated['additional_images'] = $galleryPaths;
 
         $news = News::create($validated);
 
@@ -76,7 +93,8 @@ class NewsController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'author' => 'nullable|string|max:255',
             'category' => 'nullable|string|max:100',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10240',
+            'gallery_images.*' => 'nullable|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         foreach (['content','excerpt','author','category'] as $field) {
@@ -89,9 +107,35 @@ class NewsController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            if ($news->image && Storage::disk('public')->exists($news->image)) {
+                Storage::disk('public')->delete($news->image);
+            }
             $filename = \Str::uuid() . '.' . $request->file('image')->getClientOriginalExtension();
             $path = $request->file('image')->storeAs('news', $filename, 'public');
             $validated['image'] = $path;
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            // Replace old gallery
+            if (is_array($news->additional_images)) {
+                foreach ($news->additional_images as $oldPath) {
+                    if (Storage::disk('public')->exists($oldPath)) Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            $galleryPaths = [];
+            $files = $request->file('gallery_images');
+            if (is_array($files)) {
+                $files = array_slice($files, 0, 4);
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $filename = \Str::uuid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('news/gallery', $filename, 'public');
+                        $galleryPaths[] = $path;
+                    }
+                }
+            }
+            $validated['additional_images'] = $galleryPaths;
         }
 
         $news->update($validated);
@@ -105,7 +149,7 @@ class NewsController extends Controller
     {
         $news = News::findOrFail($id);
 
-        $request->validate(['image' => 'required|image|mimes:jpg,jpeg,png|max:2048']);
+        $request->validate(['image' => 'required|image|mimes:jpg,jpeg,png|max:10240']);
 
         if ($news->image && Storage::disk('public')->exists($news->image)) {
             Storage::disk('public')->delete($news->image);
@@ -155,6 +199,12 @@ class NewsController extends Controller
         if ($news->image && Storage::disk('public')->exists($news->image)) {
             Storage::disk('public')->delete($news->image);
         }
+        if (is_array($news->additional_images)) {
+            foreach ($news->additional_images as $oldPath) {
+                if (Storage::disk('public')->exists($oldPath)) Storage::disk('public')->delete($oldPath);
+            }
+        }
+        
         $news->delete();
         Cache::forget('news_all');
 

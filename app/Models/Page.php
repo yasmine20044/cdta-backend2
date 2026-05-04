@@ -16,7 +16,12 @@ class Page extends Model
         'slug',
         'content',
         'status',
-        'image'
+        'image',
+        'gallery'
+    ];
+
+    protected $casts = [
+        'gallery' => 'array'
     ];
 
     // encrypt content

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\NavItem;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class NavItemSeeder extends Seeder
 {
@@ -80,8 +81,8 @@ class NavItemSeeder extends Seeder
         ]);
 
         // Children of CDTA & Société
-        $madinati = NavItem::create(['parent_id' => $cdtaSoc->id, 'label' => 'Programme Madinati', 'url' => '#0', 'order' => 1]);
-        NavItem::create(['parent_id' => $madinati->id, 'label' => 'Application web Queffa', 'url' => '#0', 'is_external' => true]);
+        $madinati = NavItem::create(['parent_id' => $cdtaSoc->id, 'label' => 'Programme Madinati', 'url' => '/' . Str::slug('Programme Madinati'), 'order' => 1]);
+        NavItem::create(['parent_id' => $madinati->id, 'label' => 'Application web Queffa', 'url' => '/' . Str::slug('Application web Queffa'), 'is_external' => true]);
         
         $this->createChildren($cdtaSoc->id, null, [
             'Technologie & Citoyen', 'Portes ouvertes sur le CDTA', 
@@ -110,10 +111,12 @@ class NavItemSeeder extends Seeder
     {
         foreach ($items as $index => $item) {
             $data = is_array($item) ? $item : ['label' => $item];
+            $label = $data['label'];
+            
             NavItem::create(array_merge([
                 'parent_id' => $parentId,
                 'section_heading' => $sectionHeading,
-                'url' => '#0',
+                'url' => '/' . Str::slug($label),
                 'order' => $startOrder + $index
             ], $data));
         }

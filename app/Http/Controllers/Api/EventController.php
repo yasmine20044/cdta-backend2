@@ -32,7 +32,7 @@ class EventController extends Controller
             'end_date'    => 'nullable|date',
             'location'    => 'required|string|max:255',
             'category'    => 'required|string|max:100',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         // Nettoyage
@@ -161,7 +161,7 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
 
         $request->validate([
-            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048'
+            'image' => 'required|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         // Supprimer ancienne image

@@ -33,7 +33,7 @@ class ServiceController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'in:draft,published',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         $validated['description'] = Purifier::clean($validated['description']);
@@ -62,7 +62,7 @@ class ServiceController extends Controller
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'status' => 'sometimes|in:draft,published',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         if (isset($validated['description'])) $validated['description'] = Purifier::clean($validated['description']);
@@ -88,7 +88,7 @@ class ServiceController extends Controller
     {
         $service = Service::findOrFail($id);
 
-        $request->validate(['image' => 'required|image|mimes:jpg,jpeg,png|max:2048']);
+        $request->validate(['image' => 'required|image|mimes:jpg,jpeg,png|max:10240']);
 
         if ($service->image && Storage::disk('public')->exists($service->image)) {
             Storage::disk('public')->delete($service->image);

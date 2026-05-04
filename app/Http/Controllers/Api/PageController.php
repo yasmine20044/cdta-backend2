@@ -44,14 +44,23 @@ class PageController extends Controller
     {
         $validated = $request->validate([
             'title'   => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
             'status'  => 'in:draft,published',
-            'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:10240',
+            'gallery_images.*' => 'image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         $validated['title'] = strip_tags($validated['title']);
-        $validated['content'] = Purifier::clean($validated['content']);
-        $validated['slug'] = Str::slug($validated['title']);
+        $validated['content'] = isset($validated['content']) ? Purifier::clean($validated['content']) : '';
+        
+        $slug = Str::slug($validated['title']);
+        $originalSlug = $slug;
+        $count = 1;
+        while (Page::where('slug', $slug)->exists()) {
+            $slug = "{$originalSlug}-" . $count++;
+        }
+        $validated['slug'] = $slug;
+        
         $validated['status'] = $validated['status'] ?? 'draft';
 
         if ($request->hasFile('image')) {
@@ -61,6 +70,17 @@ class PageController extends Controller
             $path = $request->file('image')->storeAs('pages', $filename, 'public');
 
             $validated['image'] = $path;
+        }
+
+        // Process Gallery
+        if ($request->hasFile('gallery_images')) {
+            $galleryPaths = [];
+            foreach ($request->file('gallery_images') as $image) {
+                $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('pages/gallery', $filename, 'public');
+                $galleryPaths[] = $path;
+            }
+            $validated['gallery'] = $galleryPaths;
         }
 
         $page = Page::create($validated);
@@ -83,17 +103,54 @@ class PageController extends Controller
 
         $validated = $request->validate([
             'title'   => 'sometimes|string|max:255',
-            'content' => 'sometimes|string',
+            'content' => 'nullable|string',
             'status'  => 'sometimes|in:draft,published'
         ]);
 
         if (isset($validated['title'])) {
             $validated['title'] = strip_tags($validated['title']);
-            $validated['slug'] = Str::slug($validated['title']);
+            
+            $slug = Str::slug($validated['title']);
+            $originalSlug = $slug;
+            $count = 1;
+            while (Page::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                $slug = "{$originalSlug}-" . $count++;
+            }
+            $validated['slug'] = $slug;
         }
 
         if (isset($validated['content'])) {
             $validated['content'] = Purifier::clean($validated['content']);
+        }
+
+        // Process Cover Image if present in FormData (POST with _method=PUT)
+        if ($request->hasFile('image')) {
+            if ($page->image && Storage::disk('public')->exists($page->image)) {
+                Storage::disk('public')->delete($page->image);
+            }
+            $filename = Str::uuid() . '.' . $request->file('image')->getClientOriginalExtension();
+            $path = $request->file('image')->storeAs('pages', $filename, 'public');
+            $validated['image'] = $path;
+        }
+
+        // Process Gallery if present
+        if ($request->hasFile('gallery_images')) {
+            // Delete old gallery images
+            if ($page->gallery) {
+                foreach ($page->gallery as $oldPath) {
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+            }
+            
+            $galleryPaths = [];
+            foreach ($request->file('gallery_images') as $image) {
+                $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('pages/gallery', $filename, 'public');
+                $galleryPaths[] = $path;
+            }
+            $validated['gallery'] = $galleryPaths;
         }
 
         $page->update($validated);
@@ -114,7 +171,7 @@ class PageController extends Controller
         $page = Page::findOrFail($id);
 
         $request->validate([
-            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048'
+            'image' => 'required|image|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         if ($page->image && Storage::disk('public')->exists($page->image)) {
@@ -171,6 +228,15 @@ class PageController extends Controller
           // supprimer l'image si elle existe
     if ($page->image && Storage::disk('public')->exists($page->image)) {
         Storage::disk('public')->delete($page->image);
+    }
+
+    // supprimer la galerie
+    if ($page->gallery) {
+        foreach ($page->gallery as $oldPath) {
+            if (Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
     }
 
         $page->delete();

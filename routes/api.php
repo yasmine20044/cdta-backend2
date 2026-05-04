@@ -24,6 +24,7 @@ Route::middleware([SecureHeaders::class])->group(function () {
     Route::prefix('v1')->group(function () {
 
         Route::get('/nav', [NavItemController::class, 'index']);
+        Route::get('/nav-admin', [NavItemController::class, 'adminList']);
 
         //
         // AUTH (PUBLIC)
@@ -81,6 +82,11 @@ Route::middleware([SecureHeaders::class])->group(function () {
                 Route::delete('/services/{id}', [ServiceController::class, 'destroy']);
                 Route::post('/services/{id}/image', [ServiceController::class, 'updateImage']);
                 Route::delete('/services/{id}/image', [ServiceController::class, 'deleteImage']);
+
+                // NAVIGATION
+                Route::post('/nav-items', [NavItemController::class, 'store']);
+                Route::put('/nav-items/{id}', [NavItemController::class, 'update']);
+                Route::delete('/nav-items/{id}', [NavItemController::class, 'destroy']);
             });
 
         //
@@ -101,6 +107,7 @@ Route::middleware([SecureHeaders::class])->group(function () {
         //
         Route::middleware(['auth:sanctum', 'role:admin,editor,user'])
             ->group(function () {
+                Route::get('/me', [AuthController::class, 'me']);
                 Route::get('/view', function () {
                     return response()->json([
                         'message' => 'All roles can view'
