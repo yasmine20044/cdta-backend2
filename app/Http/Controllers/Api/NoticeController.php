@@ -64,7 +64,7 @@ class NoticeController extends Controller
         $notice = Notice::findOrFail($id);
 
         $request->validate([
-            'file' => 'required|mimes:pdf|max:10240', // 10MB max
+            'file' => 'required|mimes:pdf|max:500000', // 50MB max
         ]);
 
         if ($notice->pdf_file) {
