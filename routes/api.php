@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\NoticeController;
 use App\Http\Middleware\SecureHeaders;
 
 Route::middleware([SecureHeaders::class])->group(function () {
@@ -53,6 +54,9 @@ Route::middleware([SecureHeaders::class])->group(function () {
         Route::get('/services', [ServiceController::class, 'index']);
         Route::get('/services/{id}', [ServiceController::class, 'show']);
 
+        Route::get('/notices', [NoticeController::class, 'index']);
+        Route::get('/notices/{id}', [NoticeController::class, 'show']);
+
         //
         // ADMIN + EDITOR (CREATE / UPDATE / DELETE)
         //
@@ -84,6 +88,12 @@ Route::middleware([SecureHeaders::class])->group(function () {
                 Route::delete('/services/{id}', [ServiceController::class, 'destroy']);
                 Route::post('/services/{id}/image', [ServiceController::class, 'updateImage']);
                 Route::delete('/services/{id}/image', [ServiceController::class, 'deleteImage']);
+
+                // NOTICES
+                Route::post('/notices', [NoticeController::class, 'store']);
+                Route::put('/notices/{id}', [NoticeController::class, 'update']);
+                Route::delete('/notices/{id}', [NoticeController::class, 'destroy']);
+                Route::post('/notices/{id}/file', [NoticeController::class, 'updateFile']);
 
                 // NAVIGATION
                 Route::post('/nav-items', [NavItemController::class, 'store']);
